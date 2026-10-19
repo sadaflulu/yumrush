@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YumRush - The Ultimate Food-Catching Arcade Rush</title>
+    <!-- Google Fonts for arcade typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800&family=Quicksand:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍔</text></svg>">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Main Game Cabinet Container -->
+        <main class="game-container">
+            <!-- Header Bar / Top HUD -->
+            <header class="game-hud">
+                <div class="hud-item hud-brand">
+                    <span class="hud-logo">🍔</span>
+                    <span class="hud-title">YumRush</span>
+                </div>
+                
+                <div class="hud-item hud-stat">
+                    <span class="hud-label">SCORE</span>
+                    <span id="hudScore" class="hud-value hud-score-val">0</span>
+                </div>
+
+                <div class="hud-item hud-stat">
+                    <span class="hud-label">TIME</span>
+                    <span id="hudTimer" class="hud-value hud-timer-val">02:00</span>
+                </div>
+
+                <div class="hud-item hud-stat">
+                    <span class="hud-label">LIVES</span>
+                    <div id="hudLives" class="hud-lives-val">
+                        <span class="heart active">❤️</span>
+                        <span class="heart active">❤️</span>
+                        <span class="heart active">❤️</span>
+                    </div>
+                </div>
+
+                <div class="hud-item hud-stat">
+                    <span class="hud-label">RANK</span>
+                    <span id="hudLevel" class="hud-value hud-level-val">Level 1</span>
+                </div>
+
+                <div class="hud-actions">
+                    <button id="btnPause" class="btn-icon" aria-label="Pause game" title="Pause Game (Esc)">
+                        <span class="icon">⏸️</span>
+                    </button>
+                    <button class="btn-icon btn-sound-toggle" aria-label="Toggle sound" title="Sound Mute/Unmute">
+                        <span class="icon">🔊</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Play Area Board with Canvas & Overlays -->
+            <div class="game-board">
+                <!-- HTML5 Canvas for high-performance 60fps rendering -->
+                <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+                <!-- Level-Up Notification Banner -->
+                <div id="levelNotification" class="level-banner">
+                    <span class="banner-icon">⚡</span>
+                    <span id="levelNotifText">LEVEL 2! SPEED RUSH!</span>
+                    <span class="banner-icon">⚡</span>
+                </div>
+
+                <!-- 1. Start Screen Overlay -->
+                <div id="screenStart" class="game-overlay active">
+                    <div class="modal-card start-card">
+                        <div class="brand-hero">
+                            <div class="hero-emojis">
+                                <span class="bounce-emoji">🍔</span>
+                                <span class="bounce-emoji delayed">🍕</span>
+                                <span class="bounce-emoji">🍟</span>
+                            </div>
+                            <h1 class="logo-title">YumRush</h1>
+                            <p class="tagline">The Fast &amp; Delicious Food-Catching Arcade Rush!</p>
+                        </div>
+
+                        <!-- Stats Preview -->
+                        <div class="stats-preview-bar">
+                            <div class="stat-badge">
+                                <span class="stat-badge-label">🏆 BEST SCORE</span>
+                                <span id="startBestScore" class="stat-badge-val">0</span>
+                            </div>
+                            <div class="stat-badge">
+                                <span class="stat-badge-label">🌟 HIGHEST RANK</span>
+                                <span id="startHighestLevel" class="stat-badge-val">Level 1</span>
+                            </div>
+                        </div>
+
+                        <p class="game-blurb">
+                            Slide your chef's basket to catch mouth-watering treats falling from above. 
+                            Race against the <strong>120-second clock</strong>, don't drop food, and trigger delicious bonus points!
+                        </p>
+
+                        <div class="menu-actions">
+                            <button id="btnStartPlay" class="btn btn-primary btn-large">
+                                <span class="btn-icon-lead">▶</span> PLAY NOW
+                            </button>
+                            <button id="btnHowToPlay" class="btn btn-secondary">
+                                <span class="btn-icon-lead">📖</span> HOW TO PLAY
+                            </button>
+                            <button class="btn btn-tertiary btn-sound-toggle">
+                                <span class="icon">🔊</span> Sound: ON
+                            </button>
+                        </div>
+
+                        <div class="controls-hint">
+                            <span>🎮 Controls: <strong>[⬅️ / ➡️]</strong> or <strong>[A / D]</strong> or Drag/Touch Screen</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Pause Overlay -->
+                <div id="screenPause" class="game-overlay">
+                    <div class="modal-card pause-card">
+                        <div class="overlay-icon">⏸️</div>
+                        <h2>Game Paused</h2>
+                        <p class="overlay-subtitle">Catch your breath, Chef! The timer and food are frozen.</p>
+
+                        <div class="menu-actions">
+                            <button id="btnResume" class="btn btn-primary">
+                                <span class="btn-icon-lead">▶</span> RESUME GAME
+                            </button>
+                            <button id="btnRestartPause" class="btn btn-secondary">
+                                <span class="btn-icon-lead">🔄</span> RESTART
+                            </button>
+                            <button id="btnHomePause" class="btn btn-tertiary">
+                                <span class="btn-icon-lead">🏠</span> MAIN MENU
+                            </button>
+                            <button class="btn btn-tertiary btn-sound-toggle">
+                                <span class="icon">🔊</span> Sound: ON
+                            </button>
+                        </div>
+                        <div class="controls-hint">
+                            <span>Tip: Press <strong>Esc</strong> to quickly toggle pause</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Game Over Overlay -->
+                <div id="screenGameOver" class="game-overlay">
+                    <div class="modal-card gameover-card">
+                        <div id="goReasonBadge" class="reason-badge reason-lives">💔 NO LIVES LEFT!</div>
+                        
+                        <h2 class="gameover-title">GAME OVER</h2>
+
+                        <div id="goHighScoreBadge" class="high-score-celebration hidden">
+                            🎉 NEW PERSONAL BEST! 🎉
+                        </div>
+
+                        <!-- Results Grid -->
+                        <div class="results-grid">
+                            <div class="result-box primary-result">
+                                <span class="result-label">FINAL SCORE</span>
+                                <span id="goFinalScore" class="result-number">0</span>
+                            </div>
+                            <div class="result-box">
+                                <span class="result-label">LEVEL REACHED</span>
+                                <span id="goFinalLevel" class="result-number">Level 1</span>
+                            </div>
+                            <div class="result-box">
+                                <span class="result-label">PERSONAL BEST</span>
+                                <span id="goBestScore" class="result-number">0</span>
+                            </div>
+                        </div>
+
+                        <div class="menu-actions">
+                            <button id="btnPlayAgain" class="btn btn-primary btn-large">
+                                <span class="btn-icon-lead">🔄</span> PLAY AGAIN
+                            </button>
+                            <button id="btnHomeGameOver" class="btn btn-secondary">
+                                <span class="btn-icon-lead">🏠</span> MAIN MENU
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. How To Play Modal Overlay -->
+                <div id="modalHowToPlay" class="modal-backdrop">
+                    <div class="modal-card how-to-play-card">
+                        <div class="modal-header">
+                            <h2>📖 How to Play YumRush</h2>
+                            <button id="btnCloseHowToPlay" class="btn-close" aria-label="Close rules">&times;</button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <section class="rules-section">
+                                <h3>🎯 Goal &amp; Objective</h3>
+                                <p>Control the chef's basket along the kitchen counter to catch falling food before it hits the floor. Survive the full <strong>120 seconds</strong> and achieve the highest possible score!</p>
+                            </section>
+
+                            <section class="rules-section">
+                                <h3>❤️ Lives &amp; ⏱️ Timer</h3>
+                                <ul>
+                                    <li>You start with <strong>3 Lives (❤️ ❤️ ❤️)</strong>.</li>
+                                    <li>Every food item that reaches the bottom costs <strong>1 Life</strong>.</li>
+                                    <li>If you run out of lives, the game ends immediately!</li>
+                                    <li>The clock runs for exactly <strong>2:00 (120 seconds)</strong>. Score as much as you can before time expires.</li>
+                                </ul>
+                            </section>
+
+                            <section class="rules-section">
+                                <h3>🍎 Food Menu &amp; Points</h3>
+                                <div class="food-points-table">
+                                    <div class="food-item-pill">
+                                        <span class="pill-emoji">🍎</span>
+                                        <span class="pill-name">Apple</span>
+                                        <span class="pill-pts">+10 pts</span>
+                                    </div>
+                                    <div class="food-item-pill">
+                                        <span class="pill-emoji">🍟</span>
+                                        <span class="pill-name">Fries</span>
+                                        <span class="pill-pts">+15 pts</span>
+                                    </div>
+                                    <div class="food-item-pill">
+                                        <span class="pill-emoji">🍔</span>
+                                        <span class="pill-name">Burger</span>
+                                        <span class="pill-pts">+20 pts</span>
+                                    </div>
+                                    <div class="food-item-pill">
+                                        <span class="pill-emoji">🍕</span>
+                                        <span class="pill-name">Pizza</span>
+                                        <span class="pill-pts">+25 pts</span>
+                                    </div>
+                                    <div class="food-item-pill">
+                                        <span class="pill-emoji">🌮</span>
+                                        <span class="pill-name">Taco</span>
+                                        <span class="pill-pts">+30 pts</span>
+                                    </div>
+                                    <div class="food-item-pill bonus-pill">
+                                        <span class="pill-emoji">🧁</span>
+                                        <span class="pill-name">Chef Special</span>
+                                        <span class="pill-pts">+50 pts (Bonus!)</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="rules-section">
+                                <h3>⚡ Difficulty &amp; Levels</h3>
+                                <p>Reaching score milestones advances your level! As levels increase, food falls faster and spawns with higher frequency.</p>
+                            </section>
+
+                            <section class="rules-section">
+                                <h3>🕹️ Controls</h3>
+                                <p><strong>Keyboard:</strong> <code>⬅️ / ➡️</code> Arrow Keys or <code>A / D</code></p>
+                                <p><strong>Mouse / Touch:</strong> Move or drag your cursor/finger across the screen to steer the basket.</p>
+                                <p><strong>Pause:</strong> Press <code>Esc</code> or the Pause button anytime.</p>
+                            </section>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button id="btnCloseModalBtn" class="btn btn-primary" onclick="document.getElementById('modalHowToPlay').classList.remove('active')">
+                                Got It! Let's Rush!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Touch Directional Controls (Visible on touchscreen / mobile viewport) -->
+            <footer class="touch-controls-bar">
+                <button id="btnTouchLeft" class="touch-btn" aria-label="Move basket left">
+                    <span>⬅️</span>
+                </button>
+                <div class="touch-hint">Drag screen or tap arrows to move</div>
+                <button id="btnTouchRight" class="touch-btn" aria-label="Move basket right">
+                    <span>➡️</span>
+                </button>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>

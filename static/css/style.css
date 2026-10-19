@@ -1,0 +1,790 @@
+/* ==========================================================================
+   YumRush - Arcade Game Stylesheet
+   Modern, playful, responsive food-arcade theme
+   ========================================================================== */
+
+:root {
+    --bg-main: #13111c;
+    --bg-card: rgba(26, 23, 40, 0.95);
+    --bg-overlay: rgba(12, 10, 20, 0.88);
+    --primary: #ff6b35;
+    --primary-hover: #ff5016;
+    --secondary: #48bb78;
+    --secondary-hover: #38a169;
+    --accent: #ffd13b;
+    --danger: #f56565;
+    --text-main: #ffffff;
+    --text-muted: #a0aec0;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 107, 53, 0.15);
+    --font-heading: 'Fredoka', 'Quicksand', system-ui, sans-serif;
+    --font-body: 'Quicksand', system-ui, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+body {
+    background: radial-gradient(circle at 50% 20%, #291e3e 0%, #151124 60%, #0d0a17 100%);
+    color: var(--text-main);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    padding: 12px;
+}
+
+/* App Wrapper */
+.app-wrapper {
+    width: 100%;
+    max-width: 860px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Main Game Container */
+.game-container {
+    width: 100%;
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 2px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --------------------------------------------------------------------------
+   Top HUD Bar
+   -------------------------------------------------------------------------- */
+.game-hud {
+    background: rgba(18, 15, 30, 0.95);
+    border-bottom: 2px solid var(--border-color);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 10;
+}
+
+.hud-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hud-logo {
+    font-size: 1.6rem;
+    animation: gentleBob 2s infinite ease-in-out;
+}
+
+.hud-title {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffd13b, #ff6b35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+}
+
+.hud-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hud-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+.hud-value {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.hud-score-val {
+    color: #48bb78;
+}
+
+.hud-timer-val {
+    color: #63b3ed;
+    min-width: 50px;
+    text-align: center;
+}
+
+.hud-timer-val.timer-urgent {
+    color: #fc8181;
+    animation: urgentPulse 0.8s infinite;
+}
+
+.hud-lives-val {
+    font-size: 1.05rem;
+    display: flex;
+    gap: 4px;
+}
+
+.hud-lives-val .heart {
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.hud-lives-val .heart.lost {
+    opacity: 0.35;
+    filter: grayscale(100%);
+}
+
+.hud-level-val {
+    color: #ecc94b;
+}
+
+.hud-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Game Board & Canvas
+   -------------------------------------------------------------------------- */
+.game-board {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: 600px;
+    background: linear-gradient(180deg, #181428 0%, #241b38 60%, #302146 100%);
+    overflow: hidden;
+}
+
+.game-board.shake {
+    animation: shakeEffect 0.35s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* --------------------------------------------------------------------------
+   Level Notification Banner
+   -------------------------------------------------------------------------- */
+.level-banner {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: linear-gradient(135deg, #f6ad55, #dd6b20);
+    color: #ffffff;
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 800;
+    padding: 10px 24px;
+    border-radius: 30px;
+    box-shadow: 0 8px 25px rgba(221, 107, 32, 0.6);
+    border: 2px solid #fed7aa;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+    z-index: 50;
+}
+
+.level-banner.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Overlays & Modal Cards
+   -------------------------------------------------------------------------- */
+.game-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 10, 22, 0.94);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 40;
+}
+
+.game-overlay.active {
+    display: flex;
+}
+
+.modal-card {
+    background: #1c182d;
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+    animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    z-index: 50;
+}
+
+/* Start Card */
+.brand-hero .hero-emojis {
+    font-size: 2.4rem;
+    margin-bottom: 6px;
+}
+
+.bounce-emoji {
+    display: inline-block;
+    animation: gentleBob 2.5s infinite ease-in-out;
+}
+
+.bounce-emoji.delayed {
+    animation-delay: 0.3s;
+}
+
+.logo-title {
+    font-family: var(--font-heading);
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #ffe066, #ff7a00, #ff3366);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+}
+
+.tagline {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 16px;
+}
+
+.stats-preview-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.stat-badge {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-badge-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-muted);
+}
+
+.stat-badge-val {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.game-blurb {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #cbd5e0;
+    margin-bottom: 20px;
+}
+
+/* Menu Actions & Buttons */
+.menu-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.btn {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
+    text-decoration: none;
+}
+
+.btn:active {
+    transform: translateY(2px) scale(0.98);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff7a00, #ff5016);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(255, 80, 22, 0.4);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #ff8c21, #ff5e28);
+    box-shadow: 0 6px 20px rgba(255, 80, 22, 0.6);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-2px);
+}
+
+.btn-tertiary {
+    background: transparent;
+    color: #cbd5e0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.92rem;
+    padding: 8px 14px;
+}
+
+.btn-tertiary:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.btn-large {
+    font-size: 1.25rem;
+    padding: 15px 24px;
+}
+
+.btn-icon {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-size: 1.1rem;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.15s;
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: scale(1.05);
+}
+
+.btn-icon.muted {
+    opacity: 0.6;
+}
+
+.controls-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Pause Overlay Specifics */
+.overlay-icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+}
+
+.overlay-subtitle {
+    font-size: 0.95rem;
+    color: #cbd5e0;
+    margin-bottom: 20px;
+}
+
+/* Game Over Specifics */
+.reason-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+}
+
+.reason-lives {
+    background: rgba(245, 101, 101, 0.2);
+    color: #fc8181;
+    border: 1px solid #f56565;
+}
+
+.reason-timeout {
+    background: rgba(99, 179, 237, 0.2);
+    color: #90cdf4;
+    border: 1px solid #63b3ed;
+}
+
+.gameover-title {
+    font-family: var(--font-heading);
+    font-size: 2.4rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.high-score-celebration {
+    background: linear-gradient(135deg, #ffd700, #ff9a00);
+    color: #1a162b;
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 800;
+    padding: 8px 16px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    animation: celebrationBounce 1s infinite alternate;
+}
+
+.high-score-celebration.hidden {
+    display: none;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.result-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.primary-result {
+    background: rgba(72, 187, 120, 0.12);
+    border-color: rgba(72, 187, 120, 0.35);
+}
+
+.primary-result .result-number {
+    color: #68d391;
+}
+
+.result-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.result-number {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   How To Play Modal
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 6, 15, 0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 100;
+}
+
+.modal-backdrop.active {
+    display: flex;
+}
+
+.how-to-play-card {
+    max-width: 580px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 24px;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.modal-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.btn-close:hover {
+    color: #ffffff;
+}
+
+.modal-body {
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-bottom: 16px;
+}
+
+.rules-section {
+    margin-bottom: 16px;
+}
+
+.rules-section h3 {
+    font-size: 1rem;
+    color: var(--accent);
+    margin-bottom: 6px;
+}
+
+.rules-section p, .rules-section li {
+    font-size: 0.88rem;
+    color: #cbd5e0;
+    line-height: 1.5;
+}
+
+.rules-section ul {
+    margin-left: 20px;
+}
+
+.rules-section code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.food-points-table {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.food-item-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bonus-pill {
+    background: rgba(255, 215, 0, 0.12);
+    border-color: rgba(255, 215, 0, 0.35);
+    grid-column: span 2;
+}
+
+.bonus-pill .pill-pts {
+    color: #ecc94b;
+    font-weight: 700;
+}
+
+.pill-emoji {
+    font-size: 1.3rem;
+}
+
+.pill-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.pill-pts {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: #68d391;
+    font-weight: 600;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* --------------------------------------------------------------------------
+   Touch Controls Bar (Mobile / Small Screen)
+   -------------------------------------------------------------------------- */
+.touch-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: rgba(18, 15, 30, 0.98);
+    border-top: 2px solid var(--border-color);
+}
+
+.touch-btn {
+    width: 64px;
+    height: 52px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: none;
+    transition: background-color 0.1s, transform 0.1s;
+}
+
+.touch-btn:active {
+    background: rgba(255, 255, 255, 0.22);
+    transform: scale(0.95);
+}
+
+.touch-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Animations
+   -------------------------------------------------------------------------- */
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes gentleBob {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes urgentPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 0.85;
+    }
+}
+
+@keyframes celebrationBounce {
+    from {
+        transform: scale(0.98);
+    }
+    to {
+        transform: scale(1.03);
+    }
+}
+
+@keyframes shakeEffect {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Media Queries
+   -------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+    body {
+        padding: 4px;
+    }
+
+    .game-hud {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .hud-title {
+        display: none; /* Hide text brand on very small screens to save space */
+    }
+
+    .hud-stat {
+        padding: 2px 8px;
+    }
+
+    .hud-value {
+        font-size: 0.95rem;
+    }
+
+    .logo-title {
+        font-size: 2.2rem;
+    }
+
+    .modal-card {
+        padding: 20px 16px;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .food-points-table {
+        grid-template-columns: 1fr;
+    }
+
+    .bonus-pill {
+        grid-column: span 1;
+    }
+}
+
+@media (min-width: 768px) {
+    /* Hide touch controls on desktop if pointer/keyboard is preferred, or keep subtle */
+    .touch-controls-bar {
+        display: none;
+    }
+}
